@@ -25,6 +25,7 @@
     "check:hardening": "npx --yes supabase@latest db query --linked --file supabase/check_hardening.sql",
     "test:auth:phase3": "node --env-file=.env.local scripts/phase3-auth-tests.mjs",
     "test:auth:phase3:cleanup": "node --env-file=.env.local scripts/phase3-auth-tests.mjs -- --cleanup",
+    "dev:provision-test-accounts": "node --env-file=.env.local scripts/provision-local-test-accounts.mjs",
     "test:auth-fixes": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run tests/db/auth-fixes.test.ts",
     "test:role-guard": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run tests/db/role-guard-cascade.test.ts"
   },
