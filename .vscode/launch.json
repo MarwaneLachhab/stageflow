@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "StageFlow: Dev Server (F5)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NEXT_IGNORE_INCORRECT_LOCKFILE": "1",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "StageFlow: Debug Full Stack (breakpoints serveur + client)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
+      "args": ["dev", "-p", "3000"],
+      "runtimeArgs": ["--inspect"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "env": {
+        "NEXT_IGNORE_INCORRECT_LOCKFILE": "1",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      },
+      "serverReadyAction": {
+        "action": "debugWithChrome",
+        "killOnServerStop": true,
+        "pattern": "- Local:.+(https?://.+)",
+        "uriFormat": "%s",
+        "webRoot": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "StageFlow: Attach Chrome to running server",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    }
+  ],
+  "compounds": []
+}

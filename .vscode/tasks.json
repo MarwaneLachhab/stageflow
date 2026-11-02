@@ -1,0 +1,74 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev",
+      "detail": "Démarre le serveur de développement StageFlow sur http://localhost:3000",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}" },
+      "env": {
+        "NEXT_IGNORE_INCORRECT_LOCKFILE": "1",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "next",
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting\\.\\.\\.",
+          "endsPattern": "Ready in"
+        }
+      },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "build",
+      "detail": "Compilation de production",
+      "type": "shell",
+      "command": "npm run build",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$tsc"],
+      "group": "build"
+    },
+    {
+      "label": "typecheck",
+      "detail": "Vérification TypeScript stricte (aucune émission de fichier)",
+      "type": "shell",
+      "command": "npm run typecheck",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "lint",
+      "detail": "ESLint",
+      "type": "shell",
+      "command": "npm run lint",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "test",
+      "detail": "Suite de tests unitaires (Vitest)",
+      "type": "shell",
+      "command": "npm run test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "test:watch",
+      "detail": "Tests en mode surveillance",
+      "type": "shell",
+      "command": "npm run test:watch",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

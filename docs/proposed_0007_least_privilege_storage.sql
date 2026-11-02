@@ -1,0 +1,92 @@
+-- =============================================================================
+-- StageFlow — PROPOSED 0007: least-privilege storage INSERT policy
+-- =============================================================================
+-- STATUS: NOT APPLIED. Stored in `docs/` on purpose so that no `db push` can
+-- pick it up automatically. Requires owner approval.
+--
+-- =============================================================================
+-- THE PROBLEM
+-- =============================================================================
+-- 0004 created this policy:
+--
+--   create policy storage_no_admin_write
+--     on storage.objects
+--     for insert
+--     to authenticated
+--     with check (bucket_id <> 'application-documents');
+--
+-- The comment above it reads « Admins never upload or overwrite candidate
+-- files. » — but the policy does not express that. RLS INSERT policies are
+-- permissive and OR-ed together, so this policy grants every authenticated user
+-- the right to insert objects into ANY bucket whose id is not
+-- `application-documents`.
+--
+-- Today there is exactly one bucket, so the rule has no effect. It becomes a
+-- real hole the moment a second bucket exists (avatars, exports, backups…):
+-- any signed-in stagiaire could write into it.
+--
+-- =============================================================================
+-- WHY DROPPING IT IS SUFFICIENT (no replacement policy)
+-- =============================================================================
+-- The original intent is already enforced without it:
+--
+--   * Writes to `application-documents` are governed solely by
+--     `storage_own_upload`, which requires
+--         bucket = application-documents
+--     AND folder[1] = auth.uid()
+--     AND an internship_applications row owned by the caller with status DRAFT.
+--     An administrator has no draft of their own, so an admin cannot upload —
+--     exactly what the comment intended.
+--
+--   * For every other bucket, removing the policy leaves no permissive INSERT
+--     policy at all. With RLS enabled, absence of a policy means DENY. That is
+--     the least-privilege outcome we want, and it holds automatically for
+--     buckets that do not exist yet.
+--
+-- A `RESTRICTIVE` replacement would be wrong here: `as restrictive` is AND-ed,
+-- so a restrictive check of `bucket_id <> 'application-documents'` would make
+-- every legitimate upload to that bucket fail.
+--
+-- =============================================================================
+-- IMPACT ON THE APPLICATION — none, verified by reading the call sites
+-- =============================================================================
+--   * Upload  (lib/actions/documents.ts:115) → `admin.storage...upload(...)`
+--     uses createAdminClient(), i.e. the service role, which bypasses RLS.
+--   * Replace-cleanup (:141) and delete (:198) → same service-role client.
+--   * Download / preview (app/api/documents/[id]/route.ts:91) → user-scoped
+--     client, governed by `storage_own_read` and `storage_admin_read`.
+--     Neither policy is touched here.
+--
+-- So no StageFlow flow depends on `storage_no_admin_write`. Removing it changes
+-- nothing for legitimate users and closes the cross-bucket write path.
+
+drop policy if exists storage_no_admin_write on storage.objects;
+
+-- =============================================================================
+-- VERIFICATION AFTER APPLYING
+-- =============================================================================
+--   select policyname, cmd
+--     from pg_policies
+--    where schemaname = 'storage' and tablename = 'objects'
+--    order by policyname;
+--   -- expected: 4 rows (storage_own_upload, storage_own_read,
+--   --           storage_admin_read, storage_own_delete)
+--
+--   -- and no INSERT policy mentions any bucket other than the app bucket:
+--   select count(*) from pg_policies
+--    where schemaname='storage' and tablename='objects' and cmd='INSERT';
+--   -- expected: 1  (storage_own_upload only)
+--
+-- Manual smoke test afterwards: upload a CV, preview it, download it, delete it
+-- — all four must still work.
+
+-- =============================================================================
+-- ROLLBACK
+-- =============================================================================
+--   create policy storage_no_admin_write
+--     on storage.objects
+--     for insert
+--     to authenticated
+--     with check (bucket_id <> 'application-documents');
+--
+-- No data is touched; rollback is the policy recreation above.
