@@ -17,6 +17,7 @@ import {
   Users,
   X,
   LifeBuoy,
+  BriefcaseBusiness,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Logo } from '@/components/ui/logo'
@@ -58,6 +59,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: '/admin/statistiques', label: 'Statistiques', icon: Clock },
   { href: '/admin/support', label: 'Support technique', icon: LifeBuoy },
   { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: User },
+  { href: '/admin/offres', label: 'Offres et établissements', icon: BriefcaseBusiness },
 ]
 
 type ShellUser = {
@@ -112,6 +114,7 @@ export function AppShell({
     '/admin/notifications': 'Notifications',
     '/admin/support': 'Support technique',
     '/admin/utilisateurs': 'Utilisateurs',
+    '/admin/offres': 'Offres et établissements',
     '/securite': 'Sécurité',
   }
   const currentCrumb =
